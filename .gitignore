@@ -49,3 +49,6 @@ Thumbs.db
 # Temporary database files or local exports
 *.sqlite
 *.db
+
+# Test URLs
+Website URL.md
