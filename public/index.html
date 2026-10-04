@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SiteWatch</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+              mono: ["JetBrains Mono", "monospace"],
+            },
+          },
+        },
+      };
+    </script>
+
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body
+    class="font-sans antialiased min-h-screen grid-pattern flex flex-col justify-between"
+  >
+    <!-- Top Navigation Bar -->
+    <header
+      class="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur sticky top-0 z-40"
+    >
+      <div
+        class="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between"
+      >
+        <div class="flex items-center gap-3">
+          <div
+            class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"
+          ></div>
+          <span
+            class="font-mono font-semibold tracking-tight text-sm text-zinc-100"
+            >SITE WATCH</span
+          >
+          <span
+            class="text-xs font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400"
+            >v1.1.0</span
+          >
+        </div>
+
+        <!-- Live Next Check Interval Timer -->
+        <div
+          class="hidden sm:flex items-center gap-2 font-mono text-xs bg-zinc-900 border border-zinc-800 px-3 py-1 rounded"
+        >
+          <span class="text-zinc-500">NEXT AUTO-CHECK:</span>
+          <span
+            id="nextCheckTimer"
+            class="text-emerald-400 font-semibold tracking-wider"
+            >05:00</span
+          >
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            id="runBtn"
+            class="font-mono text-xs bg-zinc-100 hover:bg-white text-zinc-950 font-semibold px-3 py-1.5 rounded transition flex items-center gap-2"
+          >
+            <span>RUN AUDIT</span>
+            <kbd class="bg-zinc-300 text-zinc-900 px-1 rounded text-[10px]"
+              >R</kbd
+            >
+          </button>
+          <button
+            id="openModalBtn"
+            class="font-mono text-xs bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 px-3 py-1.5 rounded transition"
+          >
+            + ADD MONITOR
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
+      <!-- Summary Statistics Bar -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-zinc-900/60 border border-zinc-800/80 p-4 rounded">
+          <div
+            class="text-xs font-mono text-zinc-400 uppercase tracking-wider mb-1"
+          >
+            MONITORED TARGETS
+          </div>
+          <div
+            class="text-2xl font-mono font-semibold text-zinc-100 flex items-baseline gap-2"
+          >
+            <span id="kpiActiveMonitors" class="text-emerald-400">--</span>
+            <span class="text-xs text-zinc-500 font-normal">ACTIVE</span>
+            <span class="text-zinc-700">/</span>
+            <span id="kpiDisabledMonitors" class="text-zinc-400">--</span>
+            <span class="text-xs text-zinc-500 font-normal">DISABLED</span>
+          </div>
+        </div>
+        <div class="bg-zinc-900/60 border border-zinc-800/80 p-4 rounded">
+          <div
+            class="text-xs font-mono text-zinc-400 uppercase tracking-wider mb-1"
+          >
+            ACTIVE INCIDENTS
+          </div>
+          <div class="text-2xl font-mono font-semibold" id="kpiIncidents">
+            --
+          </div>
+        </div>
+        <div class="bg-zinc-900/60 border border-zinc-800/80 p-4 rounded">
+          <div
+            class="text-xs font-mono text-zinc-400 uppercase tracking-wider mb-1"
+          >
+            24H UPTIME RATE
+          </div>
+          <div
+            class="text-2xl font-mono font-semibold text-emerald-400"
+            id="kpiUptime"
+          >
+            --%
+          </div>
+        </div>
+      </div>
+
+      <!-- View Switching Tabs -->
+      <div class="flex border-b border-zinc-800 gap-6 font-mono text-xs">
+        <button
+          id="tab-monitors"
+          class="tab-btn pb-2 border-b-2 border-emerald-500 text-zinc-100 font-semibold"
+          data-tab="monitors"
+        >
+          MONITORS
+        </button>
+        <button
+          id="tab-runs"
+          class="tab-btn pb-2 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200"
+          data-tab="runs"
+        >
+          CHECK RUNS
+        </button>
+        <button
+          id="tab-incidents"
+          class="tab-btn pb-2 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200"
+          data-tab="incidents"
+        >
+          INCIDENT LOGS
+        </button>
+      </div>
+
+      <!-- View 1: Monitors View -->
+      <div id="view-monitors" class="space-y-4">
+        <div class="border border-zinc-800 rounded overflow-hidden bg-zinc-950">
+          <table class="w-full text-left font-mono text-xs">
+            <thead
+              class="bg-zinc-900/80 border-b border-zinc-800 text-zinc-400 uppercase"
+            >
+              <tr>
+                <th class="p-3">State</th>
+                <th class="p-3">Health</th>
+                <th class="p-3">Target Name</th>
+                <th class="p-3">URL</th>
+                <th class="p-3">Expected</th>
+                <th class="p-3">Latency</th>
+                <th class="p-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody
+              id="monitorsTable"
+              class="divide-y divide-zinc-800/60 text-zinc-300"
+            >
+              <tr>
+                <td colspan="7" class="p-4 text-center text-zinc-500">
+                  Loading monitor specs...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- View 2: Check Runs View -->
+      <div id="view-runs" class="hidden space-y-4">
+        <div class="border border-zinc-800 rounded overflow-hidden bg-zinc-950">
+          <table class="w-full text-left font-mono text-xs">
+            <thead
+              class="bg-zinc-900/80 border-b border-zinc-800 text-zinc-400 uppercase"
+            >
+              <tr>
+                <th class="p-3">Run ID</th>
+                <th class="p-3">Trigger</th>
+                <th class="p-3">Executed At</th>
+                <th class="p-3">Duration</th>
+                <th class="p-3">Results</th>
+              </tr>
+            </thead>
+            <tbody
+              id="runsTable"
+              class="divide-y divide-zinc-800/60 text-zinc-300"
+            >
+              <tr>
+                <td colspan="5" class="p-4 text-center text-zinc-500">
+                  Fetching audit runs...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- View 3: Incidents Log View -->
+      <div id="view-incidents" class="hidden space-y-4">
+        <div class="border border-zinc-800 rounded overflow-hidden bg-zinc-950">
+          <table class="w-full text-left font-mono text-xs">
+            <thead
+              class="bg-zinc-900/80 border-b border-zinc-800 text-zinc-400 uppercase"
+            >
+              <tr>
+                <th class="p-3">Incident ID</th>
+                <th class="p-3">Monitor ID</th>
+                <th class="p-3">Status</th>
+                <th class="p-3">Cause / Error</th>
+                <th class="p-3">Started At</th>
+                <th class="p-3">Fail Count</th>
+              </tr>
+            </thead>
+            <tbody
+              id="incidentsTable"
+              class="divide-y divide-zinc-800/60 text-zinc-300"
+            >
+              <tr>
+                <td colspan="6" class="p-4 text-center text-zinc-500">
+                  Checking incident history...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- Live Terminal Log Stream Ticker -->
+    <footer class="border-t border-zinc-800 bg-black font-mono text-xs p-3">
+      <div
+        class="max-w-7xl mx-auto flex items-center justify-between text-zinc-500"
+      >
+        <div class="flex items-center gap-2">
+          <span class="text-emerald-500">●</span>
+          <span class="text-zinc-400" id="terminalOutput"
+            >PROBE ENGINE READY. Waiting for invocation...</span
+          >
+        </div>
+        <span class="text-zinc-600">POLL: 10s</span>
+      </div>
+    </footer>
+
+    <!-- Modal: Add New Monitor Form -->
+    <div
+      id="monitorModal"
+      class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50"
+    >
+      <div
+        class="bg-zinc-900 border border-zinc-800 rounded w-full max-w-md p-6 space-y-4"
+      >
+        <h3 class="font-mono font-semibold text-sm text-zinc-100">
+          REGISTER NEW MONITOR
+        </h3>
+        <form id="addForm" class="space-y-3 font-mono text-xs">
+          <div>
+            <label class="block text-zinc-400 mb-1">Target Name</label>
+            <input
+              type="text"
+              id="mName"
+              placeholder="e.g. Google Public DNS"
+              autocomplete="off"
+              required
+              class="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-zinc-100 focus:outline-none focus:border-zinc-500"
+            />
+          </div>
+          <div>
+            <label class="block text-zinc-400 mb-1">Target URL</label>
+            <input
+              type="url"
+              id="mUrl"
+              placeholder="https://..."
+              autocomplete="off"
+              required
+              class="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-zinc-100 focus:outline-none focus:border-zinc-500"
+            />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-zinc-400 mb-1">Expected Status</label>
+              <input
+                type="number"
+                id="mStatus"
+                value="200"
+                autocomplete="off"
+                required
+                class="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-zinc-100 focus:outline-none focus:border-zinc-500"
+              />
+            </div>
+            <div>
+              <label class="block text-zinc-400 mb-1">Timeout (ms)</label>
+              <input
+                type="number"
+                id="mTimeout"
+                value="5000"
+                autocomplete="off"
+                required
+                class="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-zinc-100 focus:outline-none focus:border-zinc-500"
+              />
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              id="closeModalBtn"
+              class="px-3 py-1.5 bg-zinc-800 text-zinc-300 rounded hover:bg-zinc-700"
+            >
+              CANCEL
+            </button>
+            <button
+              type="submit"
+              class="px-3 py-1.5 bg-zinc-100 text-zinc-950 font-semibold rounded hover:bg-white"
+            >
+              SAVE TARGET
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
