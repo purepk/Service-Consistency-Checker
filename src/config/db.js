@@ -15,8 +15,15 @@ export const mysqlPool = mysql.createPool({
 });
 
 export const connectMongoDB = async () => {
+    const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
+
+    if (!mongoUri) {
+        console.error('MongoDB connection error: Neither MONGODB_URI nor MONGO_URI is defined in your .env file.');
+        process.exit(1);
+    }
+
     try {
-        await mongoose.connect(process.env.MONGODB_URI);
+        await mongoose.connect(mongoUri);
         console.log('Connected to MongoDB successfully.');
     } catch (error) {
         console.error('MongoDB connection error:', error);

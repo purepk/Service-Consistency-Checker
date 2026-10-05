@@ -14,6 +14,6 @@ const checkResultSchema = new mongoose.Schema({
 
 checkResultSchema.index({ monitor_id: 1, checked_at: -1 });
 checkResultSchema.index({ run_id: 1 });
-checkResultSchema.index({ checked_at: 1 }, { expireAfterSeconds: 2592000 }); // TTL index 30 days[cite: 1]
+checkResultSchema.index({ checked_at: 1 }, { expireAfterSeconds: 2592000 });
 
 export const CheckResult = mongoose.model('CheckResult', checkResultSchema);

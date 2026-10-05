@@ -2,7 +2,6 @@ import { mysqlPool } from '../config/db.js';
 import { CheckResult } from '../models/CheckResult.js';
 import { executeCheckRun } from '../services/checkerService.js';
 
-// Monitors[cite: 2]
 export const getMonitors = async (req, res) => {
     const { is_active } = req.query;
     let query = 'SELECT * FROM monitors WHERE deleted_at IS NULL';
@@ -47,7 +46,6 @@ export const deleteMonitor = async (req, res) => {
     res.status(204).send();
 };
 
-// Checks & Results[cite: 2]
 export const runCheck = async (req, res) => {
     const result = await executeCheckRun('manual');
     res.status(201).json(result);
@@ -70,7 +68,6 @@ export const getCheckRuns = async (req, res) => {
     res.json(runs);
 };
 
-// Incidents & Summary[cite: 2]
 export const getIncidents = async (req, res) => {
     const { status } = req.query;
     let query = 'SELECT * FROM incidents';

@@ -43,7 +43,6 @@ export async function executeCheckRun(triggerType = 'manual') {
         const responseTimeMs = Date.now() - probeStart;
         if (isUp) upCount++; else downCount++;
 
-        // Process incident state & send emails on state changes
         await handleIncidentState(monitor, isUp, errorMessage, responseTimeMs);
 
         return {
@@ -84,7 +83,6 @@ async function handleIncidentState(monitor, isUp, errorMessage, responseTimeMs) 
 
     if (!isUp) {
         if (openIncidents.length === 0) {
-            // New Incident -> Create DB entry & Send DOWN email alert
             await mysqlPool.execute(
                 `INSERT INTO incidents (monitor_id, started_at, status, cause, fail_count) VALUES (?, NOW(), 'open', ?, 1)`,
                 [monitor.id, errorMessage || `HTTP Status mismatch (expected ${monitor.expected_status})`]
@@ -98,14 +96,12 @@ async function handleIncidentState(monitor, isUp, errorMessage, responseTimeMs) 
                 responseTime: responseTimeMs
             });
         } else {
-            // Incident still ongoing -> Increment fail count
             await mysqlPool.execute(
                 `UPDATE incidents SET fail_count = fail_count + 1 WHERE id = ?`,
                 [openIncidents[0].id]
             );
         }
     } else if (openIncidents.length > 0) {
-        // Service Recovered -> Resolve DB entry & Send RECOVERED email alert
         await mysqlPool.execute(
             `UPDATE incidents 
        SET status = 'resolved', 

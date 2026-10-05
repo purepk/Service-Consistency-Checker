@@ -26,7 +26,6 @@
   <body
     class="font-sans antialiased min-h-screen grid-pattern flex flex-col justify-between"
   >
-    <!-- Top Navigation Bar -->
     <header
       class="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur sticky top-0 z-40"
     >
@@ -43,11 +42,10 @@
           >
           <span
             class="text-xs font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400"
-            >v1.1.0</span
+            >v1.0.0</span
           >
         </div>
 
-        <!-- Live Next Check Interval Timer -->
         <div
           class="hidden sm:flex items-center gap-2 font-mono text-xs bg-zinc-900 border border-zinc-800 px-3 py-1 rounded"
         >
@@ -55,7 +53,7 @@
           <span
             id="nextCheckTimer"
             class="text-emerald-400 font-semibold tracking-wider"
-            >05:00</span
+            >01:00</span
           >
         </div>
 
@@ -79,9 +77,7 @@
       </div>
     </header>
 
-    <!-- Main Content Area -->
     <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
-      <!-- Summary Statistics Bar -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-zinc-900/60 border border-zinc-800/80 p-4 rounded">
           <div
@@ -124,7 +120,6 @@
         </div>
       </div>
 
-      <!-- View Switching Tabs -->
       <div class="flex border-b border-zinc-800 gap-6 font-mono text-xs">
         <button
           id="tab-monitors"
@@ -149,7 +144,6 @@
         </button>
       </div>
 
-      <!-- View 1: Monitors View -->
       <div id="view-monitors" class="space-y-4">
         <div class="border border-zinc-800 rounded overflow-hidden bg-zinc-950">
           <table class="w-full text-left font-mono text-xs">
@@ -180,7 +174,6 @@
         </div>
       </div>
 
-      <!-- View 2: Check Runs View -->
       <div id="view-runs" class="hidden space-y-4">
         <div class="border border-zinc-800 rounded overflow-hidden bg-zinc-950">
           <table class="w-full text-left font-mono text-xs">
@@ -209,7 +202,6 @@
         </div>
       </div>
 
-      <!-- View 3: Incidents Log View -->
       <div id="view-incidents" class="hidden space-y-4">
         <div class="border border-zinc-800 rounded overflow-hidden bg-zinc-950">
           <table class="w-full text-left font-mono text-xs">
@@ -240,7 +232,6 @@
       </div>
     </main>
 
-    <!-- Live Terminal Log Stream Ticker -->
     <footer class="border-t border-zinc-800 bg-black font-mono text-xs p-3">
       <div
         class="max-w-7xl mx-auto flex items-center justify-between text-zinc-500"
@@ -255,7 +246,6 @@
       </div>
     </footer>
 
-    <!-- Modal: Add New Monitor Form -->
     <div
       id="monitorModal"
       class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50"

@@ -1,13 +1,12 @@
 const API = '/api/v1';
 let latestProbes = {};
-const CRON_INTERVAL_MS = 1 * 60 * 1000; // 5-minute interval matching cron schedule
+const CRON_INTERVAL_MS = 1 * 60 * 1000;
 
-// Initialize App
 document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     refreshAll();
     startCountdownTimer();
-    setInterval(refreshAll, 10000); // Poll dashboard data every 10 seconds
+    setInterval(refreshAll, 10000);
 });
 
 function setupEventListeners() {
@@ -28,17 +27,15 @@ function setupEventListeners() {
     });
 }
 
-// 1. Cron-Aligned Countdown Timer Function
 function startCountdownTimer() {
     function updateTimer() {
         const now = Date.now();
-        // Calculate next 5-minute boundary aligned with clock (00, 05, 10, 15...)
         const nextInterval = Math.ceil(now / CRON_INTERVAL_MS) * CRON_INTERVAL_MS;
         let remainingMs = nextInterval - now;
 
         if (remainingMs <= 0) {
             remainingMs = CRON_INTERVAL_MS;
-            refreshAll(); // Auto refresh when interval resets
+            refreshAll();
         }
 
         const totalSeconds = Math.floor(remainingMs / 1000);
@@ -97,7 +94,6 @@ async function loadMonitors() {
         const monitors = await res.json();
         const tbody = document.getElementById('monitorsTable');
 
-        // 2. Count Active vs Disabled Monitors for KPI
         const activeCount = monitors.filter(m => m.is_active).length;
         const disabledCount = monitors.length - activeCount;
 
@@ -113,12 +109,10 @@ async function loadMonitors() {
             const probe = latestProbes[m.id];
             const isUp = probe ? probe.is_up : null;
 
-            // Enable/Disable State Badge
             const stateBadge = m.is_active
                 ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-950/80 border border-emerald-800 text-emerald-400">ENABLED</span>'
                 : '<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-zinc-900 border border-zinc-700 text-zinc-400">DISABLED</span>';
 
-            // Health Status Badge
             let statusBadge = '<span class="text-zinc-500">PENDING</span>';
             if (!m.is_active) {
                 statusBadge = '<span class="text-zinc-600">PAUSED</span>';
@@ -130,7 +124,6 @@ async function loadMonitors() {
 
             const latency = probe && m.is_active ? `${probe.response_time_ms}ms` : '--';
 
-            // Dim row styling if monitor is disabled
             const rowClass = m.is_active
                 ? 'hover:bg-zinc-900/40'
                 : 'opacity-50 bg-zinc-950/40 hover:bg-zinc-900/20';
