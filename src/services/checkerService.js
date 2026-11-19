@@ -7,8 +7,8 @@ export async function executeCheckRun(triggerType = 'manual') {
     const startTime = Date.now();
 
     const [runInsert] = await mysqlPool.execute(
-        `INSERT INTO check_runs (started_at, trigger_type) VALUES (NOW(), ?)`,
-        [triggerType]
+        `INSERT INTO check_runs (started_at, trigger_type) VALUES (?, ?)`,
+        [new Date(), triggerType]
     );
     const runId = runInsert.insertId;
 
@@ -67,9 +67,9 @@ export async function executeCheckRun(triggerType = 'manual') {
     const durationMs = Date.now() - startTime;
     await mysqlPool.execute(
         `UPDATE check_runs 
-     SET finished_at = NOW(), total_count = ?, up_count = ?, down_count = ?, duration_ms = ? 
+     SET finished_at = ?, total_count = ?, up_count = ?, down_count = ?, duration_ms = ? 
      WHERE id = ?`,
-        [monitors.length, upCount, downCount, durationMs, runId]
+        [new Date(), monitors.length, upCount, downCount, durationMs, runId]
     );
 
     return { runId, total_count: monitors.length, up_count: upCount, down_count: downCount, duration_ms: durationMs };
@@ -84,8 +84,8 @@ async function handleIncidentState(monitor, isUp, errorMessage, responseTimeMs) 
     if (!isUp) {
         if (openIncidents.length === 0) {
             await mysqlPool.execute(
-                `INSERT INTO incidents (monitor_id, started_at, status, cause, fail_count) VALUES (?, NOW(), 'open', ?, 1)`,
-                [monitor.id, errorMessage || `HTTP Status mismatch (expected ${monitor.expected_status})`]
+                `INSERT INTO incidents (monitor_id, started_at, status, cause, fail_count) VALUES (?, ?, 'open', ?, 1)`,
+                [monitor.id, new Date(), errorMessage || `HTTP Status mismatch (expected ${monitor.expected_status})`]
             );
 
             await sendIncidentAlert({
@@ -102,13 +102,14 @@ async function handleIncidentState(monitor, isUp, errorMessage, responseTimeMs) 
             );
         }
     } else if (openIncidents.length > 0) {
+        const resolvedAt = new Date();
         await mysqlPool.execute(
             `UPDATE incidents 
        SET status = 'resolved', 
-           resolved_at = NOW(), 
-           duration_seconds = TIMESTAMPDIFF(SECOND, started_at, NOW()) 
+           resolved_at = ?, 
+           duration_seconds = TIMESTAMPDIFF(SECOND, started_at, ?) 
        WHERE id = ?`,
-            [openIncidents[0].id]
+            [resolvedAt, resolvedAt, openIncidents[0].id]
         );
 
         await sendIncidentAlert({
